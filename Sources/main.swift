@@ -68,10 +68,9 @@ routes.add(method: .post, uri: "/registration") { request, response in
 
     let entry = json["entry"] as! [String: Any]
     let filePath = "\(request.documentRoot)/entries.plist"
-    let entries = readEntries(request: request)
-    entries.adding(entry)
+    var entries = readEntries(request: request)
+    entries = entries.adding(entry) as NSArray
     entries.write(toFile: filePath, atomically: true)
-    
     response.status = .ok
     response.completed()
 }
@@ -86,10 +85,10 @@ routes.add(method: .get, uri: "/registration") { request, response in
     }
     let fileDic: Dictionary = ["Device UDIDs": list]
     do {
-        let data = try PropertyListSerialization.data(fromPropertyList: fileDic, format: PropertyListSerialization.PropertyListFormat.binary, options: PropertyListSerialization.WriteOptions.min)
+        let data = try PropertyListSerialization.data(fromPropertyList: fileDic, format: PropertyListSerialization.PropertyListFormat.xml, options: 0)
         response.setHeader(.contentType, value: "application/x-plist")
         response.setHeader(.contentLength, value: "\(data.count)")
-        response.setHeader(.contentDisposition, value: "inline; filename=\"registration_ids.plist\"")
+        response.setHeader(.contentDisposition, value: "inline; filename=\"registration_ids.deviceids\"")
         let array = data.withUnsafeBytes {
             [UInt8](UnsafeBufferPointer(start: $0, count: data.count))
         }
