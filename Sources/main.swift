@@ -75,11 +75,20 @@ routes.add(method: .post, uri: "/registration") { request, response in
     response.completed()
 }
 
+func chineseToPinyin(chinese: String) -> String {
+    let cfString = NSMutableString(string: chinese) as CFMutableString
+    if CFStringTransform(cfString, nil, kCFStringTransformMandarinLatin, false) && CFStringTransform(cfString, nil, kCFStringTransformStripDiacritics, false) {
+        return (cfString as String).replacingOccurrences(of: " ", with: "")
+    }
+    return chinese
+}
+
 routes.add(method: .get, uri: "/registration") { request, response in
     let docRoot = request.documentRoot
     var entries: [[String: Any]] = readEntries(request: request) as! [[String: Any]]
     let list = entries.map { obj -> [String : String] in
-        let name = obj["field_4"] as! String
+        var name = obj["field_4"] as! String
+        name = chineseToPinyin(chinese: name)
         let udid = obj["field_9"] as! String
         return ["deviceIdentifier": udid, "deviceName": name]
     }
